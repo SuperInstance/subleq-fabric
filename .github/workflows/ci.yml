@@ -1,0 +1,21 @@
+name: build-and-test
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Pin S5 executes the thin Python packing layer (pack.py) via execFileSync, so
+      # the runner needs python3 even though the suite is a node --test run.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # No package.json (dependency-free by design, README), nothing to build first;
+      # the pins are self-contained. History-independent: passes identically on
+      # shallow and full checkouts.
+      - run: node --test test/substrate.pins.mjs
